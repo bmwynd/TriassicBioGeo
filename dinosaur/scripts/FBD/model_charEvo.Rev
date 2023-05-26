@@ -1,0 +1,63 @@
+#################################################
+# Define the model of among-site rate variation #
+#################################################
+
+alpha ~ dnGamma(1E8, 0.5)
+moves.append(mvScale(alpha, weight=10.0))
+moves.append(mvScale(alpha, weight=10.0))
+site_rates := fnDiscretizeGamma(alpha, alpha, 4)
+
+#alpha_morpho ~ dnUniform( 0, 1E6 )
+#site_rates := fnDiscretizeGamma( alpha_morpho, alpha_morpho, 4 )
+#moves.append(mvScale(alpha_morpho, lambda=1, weight=2.0))
+#################################################
+#Because the dataset includes ordered characters, we need to specify the character blocks independently
+
+lambda = 1
+mu = 1
+vector_morph[1] <- morpho
+vector_morph[2] <- morpho
+vector_morph[3] <- morpho
+vector_morph[4] <- morpho
+vector_morph[5] <- morpho
+vector_morph[6] <- morpho
+char1=v(10,11,24,27,30,35,39,52,58,60,62,68,71,80,91,92,107,117,129,140,141,145,147,151,154,155,167,168,169,174,179,180,194,197,199,206,210,214,215,216,217,222,224,251,253,264,269,272,274,286,289,295,303,305,306,307,313,320,321,322,323,324,325,329,330,333,334,336,338,340,353,354,358,360,362,370,376,378,384,387,393,403,434,442,446)
+char2=v(10,11,27,30,52,80,91,92,107,129,140,141,147,154,155,179,194,210,224,253,264,306,320,321,323,324,325,329,330,336,340,354,358,362,370,384,403)
+char3=v(24,35,39,60,68,71,117,145,167,169,174,180,197,199,206,214,222,251,272,286,303,305,307,313,322,333,334,338,353,360,376,378,387,393,442,446)
+char4=v(58,62,168,274,295,434)
+char5=v(215,269,289)
+char6=v(151)
+vector_morph[1].excludeCharacter(char1)
+vector_morph[2].excludeCharacter(1:457)
+vector_morph[2].includeCharacter(char2)
+vector_morph[3].excludeCharacter(1:457)
+vector_morph[3].includeCharacter(char3)
+vector_morph[4].excludeCharacter(1:457)
+vector_morph[4].includeCharacter(char4)
+vector_morph[5].excludeCharacter(1:457)
+vector_morph[5].includeCharacter(char5)
+vector_morph[6].excludeCharacter(1:457)
+vector_morph[6].includeCharacter(char6)
+
+
+Q_o1 <- fnJC(2)
+Q_o2 <- fnJC(3)
+Q_o3 <- fnOrderedRateMatrix(3, lambda, mu)
+Q_o4 <- fnJC(4)
+Q_o5 <- fnOrderedRateMatrix(4, lambda, mu)
+Q_o6 <- fnJC(5)
+
+morph_models[1] ~ dnPhyloCTMC(tree=timetree, siteRates=site_rates, branchRates=branch_rates, Q=Q_o1, type="Standard")
+morph_models[2] ~ dnPhyloCTMC(tree=timetree, siteRates=site_rates, branchRates=branch_rates, Q=Q_o2, type="Standard")
+morph_models[3] ~ dnPhyloCTMC(tree=timetree, siteRates=site_rates, branchRates=branch_rates, Q=Q_o3, type="Standard")
+morph_models[4] ~ dnPhyloCTMC(tree=timetree, siteRates=site_rates, branchRates=branch_rates, Q=Q_o4, type="Standard")
+morph_models[5] ~ dnPhyloCTMC(tree=timetree, siteRates=site_rates, branchRates=branch_rates, Q=Q_o5, type="Standard")
+morph_models[6] ~ dnPhyloCTMC(tree=timetree, siteRates=site_rates, branchRates=branch_rates, Q=Q_o6, type="Standard")
+
+morph_models[1].clamp(vector_morph[1])
+morph_models[2].clamp(vector_morph[2])
+morph_models[3].clamp(vector_morph[3])
+morph_models[4].clamp(vector_morph[4])
+morph_models[5].clamp(vector_morph[5])
+morph_models[6].clamp(vector_morph[6])
+

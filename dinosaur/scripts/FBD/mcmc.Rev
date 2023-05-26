@@ -1,0 +1,59 @@
+##########################################################
+#                                                        #
+#   RevBayes: dinosaur phylogenentics for biogeography   #
+#                                                        #
+##########################################################
+####################
+# Read in the data #
+####################
+
+morpho = readDiscreteCharacterData("data/dinos.nex")
+taxa = readTaxonData("data/ages.tsv")
+contree = readTrees("data/mk_gamma_mcc.tre")[1]
+
+morpho.addMissingTaxa( taxa )
+
+n_taxa = taxa.size()
+num_taxa = taxa.size()
+num_branches = 2 * num_taxa - 3
+
+#establish the moves and monitors
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+#Source the character and clock models
+source("scripts/FBD/model_BDP_tree.Rev")
+source("scripts/FBD/model_UCLN.Rev")
+source("scripts/FBD/model_charEvo.Rev")
+#########################
+# Make the mdoel object #
+#########################
+my_model = model(timetree)
+
+
+#####################
+# Make the monitors #
+#####################
+
+monitors.append(mnModel(filename="output/FBD/posterior_samples.log", printgen=10, separator = TAB))
+monitors.append(mnFile(filename="output/FBD/tree_samples.trees", printgen=10, separator = TAB, timetree))
+monitors.append(mnScreen(printgen=100))
+
+################
+# Run the mcmc #
+################
+
+mymcmc = mcmc(my_model, moves, monitors, nruns=2, combine="mixed")
+mymcmc.run(generations=2000000, tuningInterval=200)
+
+#########################################
+# Read in the posterior sample of trees #
+#   and compute the MAP and mcc trees   #
+#########################################
+
+#start by reading in the tree trace
+#treetrace = readTreeTrace("output/FBD/tree_samples.trees", thinning=5, burnin=0.2)
+#map_tree = mapTree(treetrace, "output/FBD/MAP_tree.tree")
+#mccTree(treetrace, "output/FBD/mcc_sample.tre")
+#exit the program
+#q()    
